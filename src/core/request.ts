@@ -42,7 +42,7 @@ export class Request<TArgs, TResponse> {
     public get isRunning(): boolean { return this._running; }
     public get count(): number { return this._count; }
 
-    public send(args?: TArgs): Promise<TResponse> {
+    public send(args: TArgs = {} as TArgs): Promise<TResponse> {
         for (const key in args)
             if (undefined === args[key])
                 delete args[key];
@@ -54,6 +54,8 @@ export class Request<TArgs, TResponse> {
         this._count += 1;
 
         return new Promise<TResponse>((resolve, reject) => {
+            this.onRequesting.emit(this, args);
+
             const argsString = CoreJS.URLArgsToString(args);
             const uri = this.createURI(argsString, this.url);
             const body = this.createBody(argsString);
@@ -94,7 +96,6 @@ export class Request<TArgs, TResponse> {
                 }
             };
 
-            this.onRequesting.emit(this, args);
             this.request.send(body);
         });
     }

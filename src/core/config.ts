@@ -30,6 +30,6 @@ export class Config extends CoreJS.Config {
     }
 
     public save() {
-        window.localStorage.setItem(KEY_STORAGE, this.serialize());
+        window.localStorage.setItem(KEY_STORAGE, JSON.stringify(this));
     }
 }

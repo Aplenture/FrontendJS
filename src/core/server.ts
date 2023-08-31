@@ -1,7 +1,14 @@
+/**
+ * Aplenture/FrontendJS
+ * https://github.com/Aplenture/FrontendJS
+ * Copyright (c) 2023 Aplenture
+ * MIT License https://github.com/Aplenture/FrontendJS/blob/main/LICENSE
+ */
+
 import * as CoreJS from "corejs";
 import { Client } from "./client";
 import { Request } from "./request";
-import { BoolRequest, JSONRequest, NumberRequest, TextRequest } from "../requests";
+import { JSONRequest } from "../requests";
 
 const PARAMETER_ENDPOINT = 'endpoint';
 const PARAMETER_ROUTES = 'routes';
@@ -29,13 +36,7 @@ export class Server {
     }
 
     public get endpoint(): string { return this._config.endpoint; }
-
-    public async getInfos() {
-        if (!this._infos)
-            this._infos = await new JSONRequest<void, NodeJS.ReadOnlyDict<any>>(this.endpoint).send().catch(() => ({}));
-
-        return this._infos;
-    }
+    public get infos(): NodeJS.ReadOnlyDict<any> { return this._infos; }
 
     public addRoute(route: string) {
         if (this._routeParameter.parameters.some(tmp => tmp.name == route))
@@ -83,9 +84,9 @@ export class Server {
         this._requests[route].cancel();
     }
 
-    private init() {
+    private async init(): Promise<void> {
         if (!Client.isInitialized)
-            return Client.onInit.once(() => this.init());
+            return Client.initTask.add(() => this.init());
 
         Client.config.add(new CoreJS.DictionaryParameter(this.name, `server config for ${this.name}`, [
             new CoreJS.StringParameter(PARAMETER_ENDPOINT, `server endpoint for ${this.name}`, DEFAULT_CONFIG.endpoint),
@@ -93,9 +94,9 @@ export class Server {
         ], Object.assign({}, DEFAULT_CONFIG)));
     }
 
-    private load() {
+    private async load(): Promise<void> {
         if (!Client.isLoaded)
-            return Client.onLoading.once(() => this.load());
+            return Client.loadingTask.add(() => this.load());
 
         this._config = Client.config.get(this.name);
 
@@ -103,6 +104,8 @@ export class Server {
 
         if ('/' != this.endpoint[this.endpoint.length - 1])
             throw new Error(`config.${this.name}.endpoint needs to end with '/' (slash)`);
+
+        this._infos = await new JSONRequest<void, NodeJS.ReadOnlyDict<any>>(this.endpoint).send().catch(() => ({}));
     }
 
     private getRoute(key: string): string {

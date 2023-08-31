@@ -20,7 +20,7 @@ export abstract class Router {
     private static readonly _history = new CoreJS.Lifo<string>();
 
     private static _initialized = false;
-    private static _route: Route = null;
+    private static _route = new Route('index');
 
     public static get initialized(): boolean { return this._initialized; }
     public static get route(): Route { return this._route; }
@@ -28,12 +28,12 @@ export abstract class Router {
     public static get index(): number { return this._route && this._route.index; }
     public static get historyLength(): number { return this._history.count; }
 
-    public static init() {
+    public static async init(): Promise<void> {
         if (this._initialized)
             return;
 
         if (!Client.isInitialized)
-            return Client.onInit.once(() => Router.init());
+            return Client.initTask.add(() => Router.init());
 
         window['Router'] = this;
 
@@ -45,7 +45,7 @@ export abstract class Router {
             this.onRouteChanged.emit(null, this._route);
         });
 
-        Client.onLoaded.on(() => {
+        Client.loadedTask.add(async () => {
             this.setupRoute();
             this.onRouteChanged.emit(null, this._route);
         });

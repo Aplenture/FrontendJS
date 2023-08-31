@@ -20,14 +20,15 @@ interface Options {
 }
 
 export abstract class Client {
-    public static readonly onInit = new CoreJS.Event<void, void>('Client.onInit');
-    public static readonly onLoading = new CoreJS.Event<void, void>('Client.onLoading');
-    public static readonly onLoaded = new CoreJS.Event<void, void>('Client.onLoaded');
     public static readonly onResize = new CoreJS.Event<void, void>('Client.onResize');
 
     public static readonly viewController = new ViewController('root-view-controller');
     public static readonly popupViewController = new PopupViewController('root-popup-view-controller');
     public static readonly notificationViewController = new NotificationViewController('root-notification-view-controller');
+
+    public static initTask = new CoreJS.Task();
+    public static loadingTask = new CoreJS.Task();
+    public static loadedTask = new CoreJS.Task();
 
     private static _initialized = false;
     private static _loaded = false;
@@ -70,7 +71,7 @@ export abstract class Client {
             : window.alert(CoreJS.Localization.translate(event.reason.message || '#_something_went_wrong'))
         );
 
-        this.onInit.emit();
+        await this.initTask.execute();
 
         this._config.add(new CoreJS.BoolParameter(PARAMETER_DEBUG, 'enables/disables debug mode', false));
     }
@@ -93,9 +94,9 @@ export abstract class Client {
         if (document.readyState !== 'complete')
             await new Promise(resolve => window.addEventListener('load', resolve, { once: true }));
 
-        this.onLoading.emit();
+        await this.loadingTask.execute();
         await this.viewController.load();
-        this.onLoaded.emit();
+        await this.loadedTask.execute();
     }
 
     private static appendViewController(viewController: ViewController) {

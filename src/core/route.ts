@@ -6,41 +6,43 @@
  */
 
 export class Route {
-    private _parameters: URLSearchParams = null;
+    private static _parameters: URLSearchParams = null;
 
     constructor(
         public readonly name: string,
         public readonly index?: number
-    ) { }
+    ) {
+        this.init();
+    }
 
     public init() {
-        this._parameters = new URLSearchParams(window.location.search);
+        Route._parameters = new URLSearchParams(window.location.search);
     }
 
     public has(key: string): boolean {
-        return this._parameters.has(key);
+        return Route._parameters.has(key);
     }
 
     public get(key: string): string {
-        return this._parameters.get(key);
+        return Route._parameters.get(key);
     }
 
     public getNumber(key: string): number {
-        return Number(this._parameters.get(key));
+        return Number(Route._parameters.get(key));
     }
 
     public getBoolean(key: string): boolean {
-        return Boolean(this._parameters.get(key));
+        return Boolean(Route._parameters.get(key));
     }
 
     public set(key: string, value: any) {
-        this._parameters.set(key, value.toString());
+        Route._parameters.set(key, value.toString());
 
         window.history.replaceState({}, this.name, this.toString());
     }
 
     public delete(key: string) {
-        this._parameters.delete(key);
+        Route._parameters.delete(key);
 
         window.history.replaceState({}, this.name, this.toString());
     }
@@ -51,10 +53,10 @@ export class Route {
         if (this.index)
             result += '/' + this.index;
 
-        const parameters = this._parameters.toString();
+        const parameters = Route._parameters.toString();
 
         if (parameters)
-            result += '?' + this._parameters;
+            result += '?' + Route._parameters;
 
         return result;
     }

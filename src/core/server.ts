@@ -32,7 +32,7 @@ export class Server {
 
     public async getInfos() {
         if (!this._infos)
-            this._infos = await new JSONRequest<void, NodeJS.ReadOnlyDict<any>>(this.endpoint).send().catch(() => ({ }));
+            this._infos = await new JSONRequest<void, NodeJS.ReadOnlyDict<any>>(this.endpoint).send().catch(() => ({}));
 
         return this._infos;
     }
@@ -49,7 +49,7 @@ export class Server {
             this._config.routes[route] = def;
     }
 
-    public request<TArgs, TResponse>(route: string, parser: (data: string) => TResponse, args?: TArgs) {
+    public request<TArgs, TResponse>(route: string, parser: (data: string) => TResponse, args?: TArgs): Promise<TResponse> {
         if (!this._requests[route])
             this._requests[route] = new Request(this.endpoint, { route: this.getRoute(route) });
 
@@ -60,19 +60,19 @@ export class Server {
             : request.send(args).then(parser);
     }
 
-    public requestBool<TArgs>(route: string, args?: TArgs) {
+    public requestBool<TArgs>(route: string, args?: TArgs): Promise<boolean> {
         return this.request(route, CoreJS.parseToBool, args);
     }
 
-    public requestJSON<TArgs, TResponse extends NodeJS.Dict<any>>(route: string, args?: TArgs) {
+    public requestJSON<TArgs, TResponse extends NodeJS.Dict<any>>(route: string, args?: TArgs): Promise<TResponse> {
         return this.request<TArgs, TResponse>(route, CoreJS.parseToJSON, args);
     }
 
-    public requestNumber<TArgs>(route: string, args?: TArgs) {
+    public requestNumber<TArgs>(route: string, args?: TArgs): Promise<number> {
         return this.request(route, CoreJS.parseToNumber, args);
     }
 
-    public requestText<TArgs>(route: string, args?: TArgs) {
+    public requestText<TArgs>(route: string, args?: TArgs): Promise<string> {
         return this.request(route, CoreJS.parseToString, args);
     }
 

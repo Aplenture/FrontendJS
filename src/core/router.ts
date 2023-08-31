@@ -7,7 +7,7 @@
 
 import * as CoreJS from "corejs";
 import { Route } from "./route";
-import { Client } from "./client";
+import { ClientPreparer } from "../interfaces";
 
 interface RouteOptions {
     readonly listener?: any;
@@ -19,36 +19,29 @@ export abstract class Router {
     private static readonly _routes: Route[] = [];
     private static readonly _history = new CoreJS.Lifo<string>();
 
-    private static _initialized = false;
     private static _route = new Route('index');
 
-    public static get initialized(): boolean { return this._initialized; }
     public static get route(): Route { return this._route; }
 
     public static get index(): number { return this._route && this._route.index; }
     public static get historyLength(): number { return this._history.count; }
 
+    public static async prepare(preparer: ClientPreparer): Promise<void> { }
+
     public static async init(): Promise<void> {
-        if (this._initialized)
-            return;
-
-        if (!Client.isInitialized)
-            return Client.initTask.add(() => Router.init());
-
         window['Router'] = this;
-
-        this._initialized = true;
-
         window.addEventListener('popstate', async () => {
             this._history.pop();
             this.setupRoute();
             this.onRouteChanged.emit(null, this._route);
         });
+    }
 
-        Client.loadedTask.add(async () => {
-            this.setupRoute();
-            this.onRouteChanged.emit(null, this._route);
-        });
+    public static async load() { }
+
+    public static async loaded() {
+        this.setupRoute();
+        this.onRouteChanged.emit(null, this._route);
     }
 
     public static addRoute(name: string, onRouteChanged?: CoreJS.EventHandler<void, Route>, options: RouteOptions = {}): Route {

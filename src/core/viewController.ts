@@ -8,8 +8,9 @@
 import * as CoreJS from "corejs";
 import { Bar, TitleBar } from "../views";
 import { View } from "./view";
+import { ClientPreparer, Module } from "../interfaces";
 
-export class ViewController {
+export class ViewController implements Module<ClientPreparer, void> {
     public readonly onLoaded = new CoreJS.Event<ViewController, void>('ViewController.onLoaded');
     public readonly onUnloaded = new CoreJS.Event<ViewController, void>('ViewController.onUnloaded');
 
@@ -39,10 +40,22 @@ export class ViewController {
     public get footerBar(): Bar { return this._footerBar; }
     public set footerBar(value: Bar) { this._footerBar = value; }
 
+    public async prepare(preparer: ClientPreparer): Promise<void> {
+        await Promise.all(this._children.map(child => child.prepare(preparer)));
+    }
+
+    public async init() {
+        await Promise.all(this._children.map(child => child.init()));
+    }
+
     public async load() {
         await Promise.all(this._children.map(child => child.load()));
 
         this.onLoaded.emit(this);
+    }
+
+    public async loaded() {
+        await Promise.all(this._children.map(child => child.loaded()));
     }
 
     public async unload() {

@@ -5,6 +5,9 @@
  * MIT License https://github.com/Aplenture/FrontendJS/blob/main/LICENSE
  */
 
+export * from "./clientModule";
 export * from "./gridViewControllerDataSource";
+export * from "./module";
 export * from "./navigationViewController";
+export * from "./serverModule";
 export * from "./tableViewControllerDataSource";

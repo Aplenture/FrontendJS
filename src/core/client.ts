@@ -26,7 +26,7 @@ export abstract class Client {
 
     private static _initialized = false;
     private static _modules: readonly Module<ClientPreparer, void>[];
-    
+
     public static get title(): string { return document.title; }
     public static set title(value: string) { document.title = value; }
 
@@ -47,10 +47,11 @@ export abstract class Client {
         const config = new Config();
 
         this._initialized = true;
-        this._modules = Object.assign([
-            Router,
-            this.viewController
-        ], modules);
+
+        // load router first
+        // then other modules
+        // at least view controller
+        this._modules = Object.assign([Router], modules, [this.viewController]);
 
         await this.loadTranslations(options.localizationPath);
 

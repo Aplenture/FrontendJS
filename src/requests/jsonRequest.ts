@@ -5,16 +5,19 @@
  * MIT License https://github.com/Aplenture/FrontendJS/blob/main/LICENSE
  */
 
+import * as CoreJS from "corejs";
 import { Request, RequestOptions } from "../core/request";
 
-export class JSONRequest<TParams, TResponse> extends Request<TParams, TResponse> {
-    constructor(api: string, options?: RequestOptions) {
-        super(api, data => {
+export class JSONRequest<TParams, TResponse extends NodeJS.Dict<any>> extends Request<TParams, TResponse> {
+    constructor(endpoint: string, options: RequestOptions<TResponse> = {}) {
+        options.parser = data => {
             try {
-                return JSON.parse(data);
+                return CoreJS.parseToJSON(data);
             } catch (error) {
                 throw new Error(`file '${this.url}' has invalid json format`);
             }
-        }, options);
+        };
+
+        super(endpoint, options);
     }
 }

@@ -9,7 +9,9 @@ import * as CoreJS from "corejs";
 import { Request, RequestOptions } from "../core/request";
 
 export class BoolRequest<TParams> extends Request<TParams, boolean> {
-    constructor(api: string, options?: RequestOptions) {
-        super(api, CoreJS.parseToBool, options);
+    constructor(endpoint: string, options: RequestOptions<boolean> = {}) {
+        options.parser = CoreJS.parseToBool;
+
+        super(endpoint, options);
     }
 }

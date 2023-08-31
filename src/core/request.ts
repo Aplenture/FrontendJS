@@ -7,32 +7,36 @@
 
 import * as CoreJS from "corejs";
 
-export interface RequestOptions {
-    readonly endpoint?: string;
-    readonly type?: CoreJS.RequestMethod;
-    readonly useCredentials?: boolean;
-    readonly headers?: NodeJS.ReadOnlyDict<string>;
+export interface RequestOptions<TResponse> {
+    route?: string;
+    type?: CoreJS.RequestMethod;
+    useCredentials?: boolean;
+    headers?: NodeJS.ReadOnlyDict<string>;
+    parser?: (data: string) => TResponse;
 }
 
 export class Request<TArgs, TResponse> {
     public readonly onRequesting = new CoreJS.Event<Request<TArgs, TResponse>, any>('Request.onRequesting');
     public readonly onResponse = new CoreJS.Event<Request<TArgs, TResponse>, TResponse>('Request.onResponse');
 
-    public readonly url: string;
-    public readonly type: CoreJS.RequestMethod;
+    public static readonly DEFAULT_PARSER = data => data;
+
+    public route: string;
+    public type: CoreJS.RequestMethod;
+    public parser: (data: string) => TResponse;
 
     private readonly request = new XMLHttpRequest();
 
     private _running = false;
     private _count = 0;
+    private _promise: Promise<TResponse>;
+    private _canceled = false;
 
-    constructor(
-        api: string,
-        private readonly parser: (data: string) => TResponse,
-        options: RequestOptions = {}
-    ) {
-        this.url = (options.endpoint || '') + api;
+    constructor(public endpoint: string, options: RequestOptions<TResponse> = {}) {
+        this.route = options.route || '';
         this.type = options.type || CoreJS.RequestMethod.Get;
+        this.parser = options.parser || Request.DEFAULT_PARSER;
+
         this.request.withCredentials = options.useCredentials || false;
 
         if (options.headers)
@@ -41,6 +45,8 @@ export class Request<TArgs, TResponse> {
 
     public get isRunning(): boolean { return this._running; }
     public get count(): number { return this._count; }
+    public get url(): string { return this.endpoint + this.route; }
+    public get promise(): Promise<TResponse> { return this._promise; }
 
     public send(args: TArgs = {} as TArgs): Promise<TResponse> {
         for (const key in args)
@@ -52,8 +58,8 @@ export class Request<TArgs, TResponse> {
 
         this._running = true;
         this._count += 1;
-
-        return new Promise<TResponse>((resolve, reject) => {
+        this._canceled = false;
+        this._promise = new Promise<TResponse>((resolve, reject) => {
             this.onRequesting.emit(this, args);
 
             const argsString = CoreJS.URLArgsToString(args);
@@ -66,9 +72,12 @@ export class Request<TArgs, TResponse> {
                 if (this.request.readyState !== 4)
                     return;
 
+                if (this._canceled)
+                    return;
+
                 // enable request only after finishing promise handling
                 // to avoid parallel request handlings
-                setTimeout(() => this._running = false, 0);
+                setTimeout(() => this.finish(), 0);
 
                 switch (this.request.status) {
                     case CoreJS.ResponseCode.OK: {
@@ -98,6 +107,18 @@ export class Request<TArgs, TResponse> {
 
             this.request.send(body);
         });
+
+        return this._promise;
+    }
+
+    public cancel() {
+        if (!this._running)
+            return;
+
+        this._canceled = true;
+
+        this.request.onreadystatechange = null;
+        this.request.abort();
     }
 
     public setHeader(name: string, value: string) {
@@ -130,5 +151,10 @@ export class Request<TArgs, TResponse> {
             default:
                 return "";
         }
+    }
+
+    private finish() {
+        this._running = false;
+        this._promise = null;
     }
 }

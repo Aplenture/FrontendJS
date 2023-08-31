@@ -8,7 +8,6 @@
 import * as CoreJS from "corejs";
 import { JSONRequest } from "../requests";
 import { NotificationViewController, PopupViewController } from "../controllers";
-import { Router } from "./router";
 import { ViewController } from "./viewController";
 import { Config } from "./config";
 
@@ -22,6 +21,7 @@ interface Options {
 
 export abstract class Client {
     public static readonly onInit = new CoreJS.Event<void, void>('Client.onInit');
+    public static readonly onLoading = new CoreJS.Event<void, void>('Client.onLoading');
     public static readonly onLoaded = new CoreJS.Event<void, void>('Client.onLoaded');
     public static readonly onResize = new CoreJS.Event<void, void>('Client.onResize');
 
@@ -35,6 +35,9 @@ export abstract class Client {
 
     public static get title(): string { return document.title; }
     public static set title(value: string) { document.title = value; }
+
+    public static get isInitialized(): boolean { return this._initialized; }
+    public static get isLoaded(): boolean { return this._loaded; }
 
     public static get language(): string { return window.navigator.language; }
 
@@ -67,7 +70,6 @@ export abstract class Client {
             : window.alert(CoreJS.Localization.translate(event.reason.message || '#_something_went_wrong'))
         );
 
-        this.onInit.on(() => Router.init());
         this.onInit.emit();
 
         this._config.add(new CoreJS.BoolParameter(PARAMETER_DEBUG, 'enables/disables debug mode', false));
@@ -91,8 +93,8 @@ export abstract class Client {
         if (document.readyState !== 'complete')
             await new Promise(resolve => window.addEventListener('load', resolve, { once: true }));
 
+        this.onLoading.emit();
         await this.viewController.load();
-
         this.onLoaded.emit();
     }
 

@@ -9,7 +9,9 @@ import * as CoreJS from "corejs";
 import { Request, RequestOptions } from "../core/request";
 
 export class NumberRequest<TParams> extends Request<TParams, number> {
-    constructor(api: string, options?: RequestOptions) {
-        super(api, CoreJS.parseToNumber, options);
+    constructor(endpoint: string, options: RequestOptions<number> = {}) {
+        options.parser = CoreJS.parseToNumber;
+
+        super(endpoint, options);
     }
 }

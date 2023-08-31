@@ -30,7 +30,10 @@ export abstract class Router {
 
     public static init() {
         if (this._initialized)
-            throw new Error('Router is already initialized');
+            return;
+
+        if (!Client.isInitialized)
+            return Client.onInit.once(() => Router.init());
 
         window['Router'] = this;
 

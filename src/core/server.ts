@@ -34,18 +34,22 @@ export class Server implements ClientModule {
     public get infos(): NodeJS.ReadOnlyDict<any> { return this._infos; }
 
     public async prepare(preparer: ClientPreparer): Promise<void> {
+        const routesParameters = [];
         const defaultConfig = {
             endpoint: 'http://localhost/',
             routes: {}
         };
 
         const subpreparer = {
-            addRoute: (route: string) => defaultConfig.routes[route] = new CoreJS.StringParameter(route, '', route.toLowerCase())
+            addRoute: (route: string) => {
+                routesParameters.push(new CoreJS.StringParameter(route, '', route));
+                defaultConfig.routes[route] = route;
+            }
         };
 
         const params = [
             new CoreJS.StringParameter(PARAMETER_ENDPOINT, `server endpoint for ${this.name}`, defaultConfig.endpoint),
-            new CoreJS.DictionaryParameter<NodeJS.Dict<string>>(PARAMETER_ROUTES, 'all server routes', null, defaultConfig.routes)
+            new CoreJS.DictionaryParameter<NodeJS.Dict<string>>(PARAMETER_ROUTES, 'all server routes', routesParameters, defaultConfig.routes)
         ];
 
         // prepare modules
@@ -64,6 +68,9 @@ export class Server implements ClientModule {
 
         // load server infos
         this._infos = await new JSONRequest<void, NodeJS.ReadOnlyDict<any>>(this.endpoint).send().catch(() => ({}));
+
+        // load requests
+        Object.keys(this._config.routes).forEach(key => this._requests[key.toLowerCase()] = new Request(this.endpoint, { route: this._config.routes[key] }));
 
         // init modules
         await Promise.all(this._modules.map(module => module.init(this)));

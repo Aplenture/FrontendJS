@@ -8,10 +8,12 @@
 import * as CoreJS from "corejs";
 import { Request, RequestOptions } from "../core/request";
 
-export class TextRequest<TParams> extends Request<TParams, string> {
-    constructor(endpoint: string, options: RequestOptions<string> = {}) {
-        options.parser = CoreJS.parseToString;
-
+export class TextRequest<TParams> extends Request<TParams> {
+    constructor(endpoint: string, options: RequestOptions = {}) {
         super(endpoint, options);
+    }
+
+    public send(args?: TParams): Promise<string> {
+        return super.send(args).then(CoreJS.parseToString);
     }
 }

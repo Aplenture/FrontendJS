@@ -8,10 +8,12 @@
 import * as CoreJS from "corejs";
 import { Request, RequestOptions } from "../core/request";
 
-export class NumberRequest<TParams> extends Request<TParams, number> {
-    constructor(endpoint: string, options: RequestOptions<number> = {}) {
-        options.parser = CoreJS.parseToNumber;
-
+export class NumberRequest<TParams> extends Request<TParams> {
+    constructor(endpoint: string, options?: RequestOptions) {
         super(endpoint, options);
+    }
+
+    public send(args?: TParams): Promise<number> {
+        return super.send(args).then(CoreJS.parseToNumber);
     }
 }

@@ -20,7 +20,7 @@ interface Config {
 }
 
 export class Server implements ClientModule {
-    private readonly _requests: NodeJS.Dict<Request<any, any>> = {};
+    private readonly _requests: NodeJS.Dict<Request<any>> = {};
     private readonly _modules: readonly ServerModule[];
 
     private _config: Config;
@@ -89,10 +89,7 @@ export class Server implements ClientModule {
     }
 
     public request<TArgs, TResponse>(route: string, parser: (data: string) => TResponse, args?: TArgs): Promise<TResponse> {
-        if (!this._requests[route])
-            this._requests[route] = new Request(this.endpoint, { route: this.getRoute(route) });
-
-        const request = this._requests[route];
+        const request = this.getRequest(route);
 
         return request.isRunning
             ? request.promise.then(parser)
@@ -116,16 +113,15 @@ export class Server implements ClientModule {
     }
 
     public cancel(route: string) {
-        if (!this._requests[route])
-            return;
-
-        this._requests[route].cancel();
+        this.getRequest(route).cancel();
     }
 
-    private getRoute(key: string): string {
-        if (!this._config.routes[key])
-            throw new Error(`Invalid route '${key}'. Call Server.addRoute() first!`);
+    private getRequest(route: string) {
+        const request = this._requests[route.toLowerCase()];
 
-        return this._config.routes[key];
+        if (!request)
+            throw new Error(`Invalid route '${route}'. Prepare routes in server modules!`);
+
+        return request;
     }
 }

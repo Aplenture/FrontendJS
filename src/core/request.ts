@@ -7,35 +7,30 @@
 
 import * as CoreJS from "corejs";
 
-export interface RequestOptions<TResponse> {
+export interface RequestOptions {
     route?: string;
     type?: CoreJS.RequestMethod;
     useCredentials?: boolean;
     headers?: NodeJS.ReadOnlyDict<string>;
-    parser?: (data: string) => TResponse;
 }
 
-export class Request<TArgs, TResponse> {
-    public readonly onRequesting = new CoreJS.Event<Request<TArgs, TResponse>, any>('Request.onRequesting');
-    public readonly onResponse = new CoreJS.Event<Request<TArgs, TResponse>, TResponse>('Request.onResponse');
-
-    public static readonly DEFAULT_PARSER = data => data;
+export class Request<TArgs> {
+    public readonly onRequesting = new CoreJS.Event<Request<TArgs>, any>('Request.onRequesting');
+    public readonly onResponse = new CoreJS.Event<Request<TArgs>, any>('Request.onResponse');
 
     public route: string;
     public type: CoreJS.RequestMethod;
-    public parser: (data: string) => TResponse;
 
     private readonly request = new XMLHttpRequest();
 
     private _running = false;
     private _count = 0;
-    private _promise: Promise<TResponse>;
+    private _promise: Promise<any>;
     private _canceled = false;
 
-    constructor(public endpoint: string, options: RequestOptions<TResponse> = {}) {
+    constructor(public endpoint: string, options: RequestOptions = {}) {
         this.route = options.route || '';
         this.type = options.type || CoreJS.RequestMethod.Get;
-        this.parser = options.parser || Request.DEFAULT_PARSER;
 
         this.request.withCredentials = options.useCredentials || false;
 
@@ -46,9 +41,9 @@ export class Request<TArgs, TResponse> {
     public get isRunning(): boolean { return this._running; }
     public get count(): number { return this._count; }
     public get url(): string { return this.endpoint + this.route; }
-    public get promise(): Promise<TResponse> { return this._promise; }
+    public get promise(): Promise<any> { return this._promise; }
 
-    public send(args: TArgs = {} as TArgs): Promise<TResponse> {
+    public send(args: TArgs = {} as TArgs): Promise<any> {
         for (const key in args)
             if (undefined === args[key])
                 delete args[key];
@@ -59,7 +54,7 @@ export class Request<TArgs, TResponse> {
         this._running = true;
         this._count += 1;
         this._canceled = false;
-        this._promise = new Promise<TResponse>((resolve, reject) => {
+        this._promise = new Promise<any>((resolve, reject) => {
             this.onRequesting.emit(this, args);
 
             const argsString = CoreJS.URLArgsToString(args);
@@ -81,17 +76,9 @@ export class Request<TArgs, TResponse> {
 
                 switch (this.request.status) {
                     case CoreJS.ResponseCode.OK: {
-                        let result: TResponse;
+                        this.onResponse.emit(this, this.request.responseText);
 
-                        try {
-                            result = this.parser(this.request.responseText);
-                        } catch (error) {
-                            return reject(error);
-                        }
-
-                        this.onResponse.emit(this, result);
-
-                        return resolve(result);
+                        return resolve(this.request.responseText);
                     }
 
                     case CoreJS.ResponseCode.NoContent:

@@ -8,9 +8,9 @@
 import * as CoreJS from "corejs";
 import { Bar, TitleBar } from "../views";
 import { View } from "./view";
-import { ClientPreparer, Module } from "../interfaces";
+import { ClientModule, ClientPreparer } from "../interfaces";
 
-export class ViewController implements Module<ClientPreparer, void> {
+export class ViewController implements ClientModule {
     public readonly onLoaded = new CoreJS.Event<ViewController, void>('ViewController.onLoaded');
     public readonly onUnloaded = new CoreJS.Event<ViewController, void>('ViewController.onUnloaded');
 
@@ -54,14 +54,14 @@ export class ViewController implements Module<ClientPreparer, void> {
         this.onLoaded.emit(this);
     }
 
-    public async loaded() {
-        await Promise.all(this._children.map(child => child.loaded()));
-    }
-
     public async unload() {
         await Promise.all(this._children.map(child => child.unload()));
 
         this.onUnloaded.emit(this);
+    }
+
+    public async start() {
+        await Promise.all(this._children.map(child => child.start()));
     }
 
     public focus() {

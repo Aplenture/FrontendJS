@@ -9,7 +9,7 @@ import * as CoreJS from "corejs";
 import { Client } from "./client";
 import { Request } from "./request";
 import { JSONRequest } from "../requests";
-import { ClientPreparer, Module, ServerPreparer } from "../interfaces";
+import { ClientModule, ClientPreparer, ServerModule } from "../interfaces";
 
 const PARAMETER_ENDPOINT = 'endpoint';
 const PARAMETER_ROUTES = 'routes';
@@ -19,14 +19,14 @@ interface Config {
     readonly routes: NodeJS.ReadOnlyDict<string>;
 }
 
-export class Server implements Module<ClientPreparer, void> {
+export class Server implements ClientModule {
     private readonly _requests: NodeJS.Dict<Request<any, any>> = {};
-    private readonly _modules: readonly Module<ServerPreparer, Server>[];
+    private readonly _modules: readonly ServerModule[];
 
     private _config: Config;
     private _infos: NodeJS.ReadOnlyDict<any>;
 
-    constructor(public readonly name: string, ...modules: Module<ServerPreparer, Server>[]) {
+    constructor(public readonly name: string, ...modules: ServerModule[]) {
         this._modules = modules;
     }
 
@@ -73,8 +73,12 @@ export class Server implements Module<ClientPreparer, void> {
         await Promise.all(this._modules.map(module => module.load(this)));
     }
 
-    public async loaded(): Promise<void> {
-        await Promise.all(this._modules.map(module => module.loaded(this)));
+    public async unload(): Promise<void> {
+        await Promise.all(this._modules.map(module => module.unload(this)));
+    }
+
+    public async start(): Promise<void> {
+        await Promise.all(this._modules.map(module => module.start(this)));
     }
 
     public request<TArgs, TResponse>(route: string, parser: (data: string) => TResponse, args?: TArgs): Promise<TResponse> {

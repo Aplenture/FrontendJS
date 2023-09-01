@@ -38,8 +38,9 @@ export abstract class Router {
     }
 
     public static async load() { }
-
-    public static async loaded() {
+    public static async unload() { }
+    
+    public static async start() {
         this.setupRoute();
         this.onRouteChanged.emit(null, this._route);
     }

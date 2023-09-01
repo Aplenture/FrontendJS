@@ -11,7 +11,7 @@ import { NotificationViewController, PopupViewController } from "../controllers"
 import { ViewController } from "./viewController";
 import { Config } from "./config";
 import { Router } from "./router";
-import { ClientPreparer, Module } from "../interfaces";
+import { ClientModule } from "../interfaces";
 
 const PARAMETER_DEBUG = 'debug';
 
@@ -25,7 +25,7 @@ export abstract class Client {
     public static readonly notificationViewController = new NotificationViewController('root-notification-view-controller');
 
     private static _initialized = false;
-    private static _modules: readonly Module<ClientPreparer, void>[];
+    private static _modules: readonly ClientModule[];
 
     public static get title(): string { return document.title; }
     public static set title(value: string) { document.title = value; }
@@ -40,18 +40,20 @@ export abstract class Client {
     public static get config(): Config { return window['Config']; }
     public static get debug(): boolean { return this.config.get(PARAMETER_DEBUG); }
 
-    public static async init(rootViewController: ViewController, options: NodeJS.ReadOnlyDict<any>, ...modules: Module<ClientPreparer, void>[]) {
+    public static async init(rootViewController: ViewController, options: NodeJS.ReadOnlyDict<any>, ...modules: ClientModule[]) {
         if (this._initialized)
             throw new Error('Client is already initialized');
 
         const config = new Config();
 
         this._initialized = true;
+        this._modules = modules;
 
         // load router first
-        // then other modules
+        modules.unshift(Router);
+
         // at least view controller
-        this._modules = Object.assign([Router], modules, [this.viewController]);
+        modules.push(this.viewController);
 
         await this.loadTranslations(options.localizationPath);
 
@@ -88,7 +90,7 @@ export abstract class Client {
 
         await Promise.all(this._modules.map(module => module.init()));
         await Promise.all(this._modules.map(module => module.load()));
-        await Promise.all(this._modules.map(module => module.loaded()));
+        await Promise.all(this._modules.map(module => module.start()));
     }
 
     private static appendViewController(viewController: ViewController) {

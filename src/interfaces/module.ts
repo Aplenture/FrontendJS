@@ -9,5 +9,6 @@ export interface Module<TPreparer, TParent> {
     readonly prepare: (preparer: TPreparer) => Promise<void>;
     readonly init: (parent: TParent) => Promise<void>;
     readonly load: (parent: TParent) => Promise<void>;
-    readonly loaded: (parent: TParent) => Promise<void>;
+    readonly unload: (parent: TParent) => Promise<void>;
+    readonly start: (parent: TParent) => Promise<void>;
 }

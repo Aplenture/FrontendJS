@@ -45,6 +45,7 @@ export abstract class Client {
             throw new Error('Client is already initialized');
 
         const config = new Config();
+        const alertHandler = event => window.alert(CoreJS.Localization.translate(event.reason.message || '#_something_went_wrong'));
 
         this._initialized = true;
         this._modules = modules;
@@ -64,10 +65,7 @@ export abstract class Client {
         this.appendViewController(this.viewController);
 
         window.addEventListener('resize', () => this.onResize.emit());
-        window.addEventListener('unhandledrejection', event => this._initialized
-            ? this.popupViewController.pushError(event.reason || '#_something_went_wrong')
-            : window.alert(CoreJS.Localization.translate(event.reason.message || '#_something_went_wrong'))
-        );
+        window.addEventListener('unhandledrejection', alertHandler);
 
         config.add(new CoreJS.BoolParameter(PARAMETER_DEBUG, 'enables/disables debug mode', false));
 
@@ -91,6 +89,9 @@ export abstract class Client {
         await Promise.all(this._modules.map(module => module.init()));
         await Promise.all(this._modules.map(module => module.load()));
         await Promise.all(this._modules.map(module => module.start()));
+
+        window.removeEventListener('unhandledrejection', alertHandler);
+        window.addEventListener('unhandledrejection', event => this.popupViewController.pushError(event.reason || '#_something_went_wrong'));
     }
 
     private static appendViewController(viewController: ViewController) {

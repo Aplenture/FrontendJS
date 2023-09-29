@@ -118,15 +118,11 @@ export class Account implements ServerModule {
             access_expiration: EXPIRATION_NEW_ACCOUNT_ACCESS
         });
 
-        this._access = new Access(
-            response.api,
-            response.secret,
-            response
+        this.updateAccess(
+            new Access(response.api, response.secret, response),
+            keepLogin
         );
 
-        this._access.serialize(this._server.name, keepLogin);
-
-        this.onAccessChanged.emit(this, this._access);
         this.onLogin.emit(this, this._access);
 
         return true;
@@ -167,15 +163,11 @@ export class Account implements ServerModule {
             label: options.label
         });
 
-        this._access = new Access(
-            response.api,
-            response.secret,
-            response
+        this.updateAccess(
+            new Access(response.api, response.secret, response),
+            options.keepLogin
         );
 
-        this._access.serialize(this._server.name, options.keepLogin);
-
-        this.onAccessChanged.emit(this, this._access);
         this.onLogin.emit(this, this._access);
 
         return this._access;
@@ -188,13 +180,21 @@ export class Account implements ServerModule {
         if (!await this._server.requestBool(ROUTE_LOGOUT))
             return false;
 
-        this._access.reset(this._server.name);
-        this._access = null;
-
-        this.onAccessChanged.emit(this, null);
+        this.updateAccess(null);
         this.onLogout.emit(this);
 
         return true;
+    }
+
+    public updateAccess(access: Access, keepLogin = false) {
+        if (this._access)
+        this._access.reset(this._server.name);
+
+        if (access)
+            access.serialize(this._server.name, keepLogin);
+
+        this._access = access;
+        this.onAccessChanged.emit(this, access);
     }
 
     public changePassword(oldPassword: string, newPassword: string): Promise<boolean> {

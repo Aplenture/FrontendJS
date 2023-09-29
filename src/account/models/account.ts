@@ -22,7 +22,7 @@ const ROUTE_DELETE_ACCESS = 'deleteAccess';
 const EXPIRATION_NEW_ACCOUNT_ACCESS = CoreJS.Milliseconds.Day;
 
 interface CreateAccessOptions {
-    readonly rights?: number;
+    readonly with_rights?: number;
     readonly label?: string;
     readonly expiration_duration?: number;
 }

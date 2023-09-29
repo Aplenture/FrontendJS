@@ -40,7 +40,7 @@ export abstract class Client {
     public static get config(): Config { return window['Config']; }
     public static get debug(): boolean { return this.config.get(PARAMETER_DEBUG); }
 
-    public static async init(rootViewController: ViewController, options: NodeJS.ReadOnlyDict<any>, ...modules: ClientModule[]) {
+    public static async init(rootViewController: ViewController, options: NodeJS.ReadOnlyDict<any> = {}, ...modules: ClientModule[]) {
         if (this._initialized)
             throw new Error('Client is already initialized');
 

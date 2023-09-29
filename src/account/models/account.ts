@@ -188,7 +188,7 @@ export class Account implements ServerModule {
 
     public updateAccess(access: Access, keepLogin = false) {
         if (this._access)
-        this._access.reset(this._server.name);
+            this._access.reset(this._server.name);
 
         if (access)
             access.serialize(this._server.name, keepLogin);
@@ -227,5 +227,9 @@ export class Account implements ServerModule {
             this._access = null;
 
         return result;
+    }
+
+    public deleteAllAccesses(): Promise<boolean> {
+        return this._server.requestBool(ROUTE_DELETE_ACCESS);
     }
 }

@@ -24,7 +24,7 @@ export class Access {
 
     constructor(
         public readonly api: string,
-        private readonly secret: string,
+        public readonly secret: string,
         options: Options = {}
     ) {
         this.rights = options.rights || 0;

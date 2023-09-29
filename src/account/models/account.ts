@@ -210,7 +210,7 @@ export class Account implements ServerModule {
         });
     }
 
-    public getAccesses(): Promise<readonly Access[]> {
+    public getAllAccesses(): Promise<readonly Access[]> {
         return this._server.requestJSON(ROUTE_GET_ACCESSES)
             .then(data => data.map(data => new Access(data.api, data.secret, data)));
     }

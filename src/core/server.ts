@@ -69,9 +69,6 @@ export class Server implements ClientModule {
         // load server infos
         this._infos = await new JSONRequest<void, NodeJS.ReadOnlyDict<any>>(this.endpoint).send().catch(() => ({}));
 
-        // load requests
-        Object.keys(this._config.routes).forEach(key => this._requests[key.toLowerCase()] = new Request(this.endpoint, { route: this._config.routes[key] }));
-
         // init modules
         await Promise.all(this._modules.map(module => module.init(this)));
     }
@@ -88,39 +85,40 @@ export class Server implements ClientModule {
         await Promise.all(this._modules.map(module => module.start(this)));
     }
 
-    public request<TArgs, TResponse>(route: string, parser: (data: string) => TResponse, args?: TArgs): Promise<TResponse> {
-        const request = this.getRequest(route);
+    public request<TResponse>(route: string, parser: (data: string) => TResponse, args: NodeJS.ReadOnlyDict<any> = {}): Promise<TResponse> {
+        const request = this.getRequest(route, args);
 
         return request.isRunning
             ? request.promise.then(parser)
             : request.send(args).then(parser);
     }
 
-    public requestBool<TArgs>(route: string, args?: TArgs): Promise<boolean> {
+    public requestBool(route: string, args?: NodeJS.ReadOnlyDict<any>): Promise<boolean> {
         return this.request(route, CoreJS.parseToBool, args);
     }
 
-    public requestJSON<TArgs, TResponse extends NodeJS.Dict<any>>(route: string, args?: TArgs): Promise<TResponse> {
-        return this.request<TArgs, TResponse>(route, CoreJS.parseToJSON, args);
+    public requestJSON<TResponse extends NodeJS.Dict<any>>(route: string, args?: NodeJS.ReadOnlyDict<any>): Promise<TResponse> {
+        return this.request<TResponse>(route, CoreJS.parseToJSON, args);
     }
 
-    public requestNumber<TArgs>(route: string, args?: TArgs): Promise<number> {
+    public requestNumber(route: string, args?: NodeJS.ReadOnlyDict<any>): Promise<number> {
         return this.request(route, CoreJS.parseToNumber, args);
     }
 
-    public requestText<TArgs>(route: string, args?: TArgs): Promise<string> {
+    public requestText(route: string, args?: NodeJS.ReadOnlyDict<any>): Promise<string> {
         return this.request(route, CoreJS.parseToString, args);
     }
 
-    public cancel(route: string) {
-        this.getRequest(route).cancel();
+    public cancel(route: string, args: NodeJS.ReadOnlyDict<any> = {}) {
+        this.getRequest(route, args).cancel();
     }
 
-    private getRequest(route: string) {
-        const request = this._requests[route.toLowerCase()];
+    private getRequest(route: string, args: NodeJS.ReadOnlyDict<any>) {
+        const key = `${route} ${CoreJS.parseArgsToString(args)}`;
+        const request = this._requests[key];
 
         if (!request)
-            throw new Error(`Invalid route '${route}'. Prepare routes in server modules!`);
+            return this._requests[key] = new Request(this.endpoint, { route: this._config.routes[route] });
 
         return request;
     }

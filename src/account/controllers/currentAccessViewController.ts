@@ -110,7 +110,7 @@ export class CurrentAccessViewController extends BodyViewController {
                     .then(() => this.load())
                     .then(() => this.focus());
 
-            this.account.updateAccess(access);
+            this.account.updateAccess(access, true);
             this.load();
             this.removeFromParent();
         }).catch(error => Client.popupViewController.pushError(error).then(() => this.load()).then(() => this.focus()));

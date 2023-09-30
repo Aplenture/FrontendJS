@@ -5,6 +5,7 @@
  * MIT License https://github.com/Aplenture/FrontendJS/blob/main/LICENSE
  */
 
+export * from "./bounds";
 export * from "./clientModule";
 export * from "./gridViewControllerDataSource";
 export * from "./module";

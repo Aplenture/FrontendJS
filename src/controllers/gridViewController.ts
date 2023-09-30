@@ -37,6 +37,12 @@ export class GridViewController extends ViewController {
     public get selectionMode(): TableSelectionMode { return this.gridView.selectionMode; }
     public set selectionMode(value: TableSelectionMode) { this.gridView.selectionMode = value; }
 
+    public get canScrollTop(): boolean { return this.cells[0].bounds.top < this.gridView.bounds.top; }
+    public get canScrollBottom(): boolean { return this.cells[this.cells.length - 1].bounds.bottom > this.gridView.bounds.bottom; }
+
+    public get canScrollLeft(): boolean { return this.cells[0].bounds.left < this.gridView.bounds.left; }
+    public get canScrollRight(): boolean { return this.cells[this.cells.length - 1].bounds.right > this.gridView.bounds.right; }
+
     public load(): Promise<void> {
         this.render();
 
@@ -136,5 +142,71 @@ export class GridViewController extends ViewController {
         });
 
         return cell;
+    }
+
+    public scrollHoriztonal(pages = 1): boolean {
+        if (0 == pages)
+            return false;
+
+        const view = this.gridView.bounds;
+
+        let result = false;
+
+        if (pages > 0) {
+            const cells = this.cells.map(cell => cell.bounds);
+            const rightCell = cells.find(cell => cell.right >= view.right) ?? cells[cells.length - 1];
+            const x = (view.right - view.top) * pages - (view.right - rightCell.top);
+            const targetRight = x + view.right;
+            const righterCell = cells.find(cell => cell.right >= targetRight);
+
+            result = !righterCell;
+
+            this.gridView.scrollBy(x, 0);
+        } else {
+            const cells = this.cells.map(cell => cell.bounds).reverse();
+            const leftCell = cells.find(cell => cell.left <= view.left) ?? cells[cells.length - 1];
+            const x = (view.bottom - view.left) * pages + (leftCell.bottom - view.left);
+            const targetLeft = x + view.left;
+            const lefterCell = cells.find(cell => cell.left <= targetLeft);
+
+            result = !lefterCell;
+
+            this.gridView.scrollBy(x, 0);
+        }
+
+        return result;
+    }
+
+    public scrollVertical(pages = 1): boolean {
+        if (0 == pages)
+            return false;
+
+        const view = this.gridView.bounds;
+
+        let result = false;
+
+        if (pages > 0) {
+            const cells = this.cells.map(cell => cell.bounds);
+            const bottomCell = cells.find(cell => cell.bottom >= view.bottom) ?? cells[cells.length - 1];
+            const y = (view.bottom - view.top) * pages - (view.bottom - bottomCell.top);
+            const targetBottom = y + view.bottom;
+            const lowerCell = cells.find(cell => cell.bottom >= targetBottom);
+
+            result = !lowerCell;
+
+            this.gridView.scrollBy(0, y);
+        } else {
+            const cells = this.cells.map(cell => cell.bounds).reverse();
+            const topCell = cells.find(cell => cell.top <= view.top) ?? cells[cells.length - 1];
+            const y = (view.bottom - view.top) * pages + (topCell.bottom - view.top);
+            const targetTop = y + view.top;
+            const upperCell = cells.find(cell => cell.top <= targetTop);
+
+            result = !upperCell;
+
+            this.gridView.scrollBy(0, y);
+        }
+
+        return result;
     }
 }

@@ -6,6 +6,7 @@
  */
 
 import * as CoreJS from "corejs";
+import { Bounds } from "../interfaces";
 
 export class View {
     public readonly onClick = new CoreJS.Event<View, void>('View.onClick');
@@ -121,6 +122,24 @@ export class View {
 
     public get backgroundColor(): string { return this.div.style.background; }
     public set backgroundColor(value: string) { this.div.style.background = value; }
+
+    public get bounds(): Bounds { return this.div.getBoundingClientRect(); }
+
+    public scrollBy(x: number, y: number) {
+        this.div.scrollBy({
+            top: y,
+            left: x,
+            behavior: "smooth"
+        });
+    }
+
+    public scrollTo(x: number, y: number) {
+        this.div.scrollTo({
+            top: y,
+            left: x,
+            behavior: "smooth"
+        });
+    }
 
     public focus() {
         this.div.focus();

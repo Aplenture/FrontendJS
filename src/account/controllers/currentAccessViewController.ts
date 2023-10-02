@@ -103,14 +103,16 @@ export class CurrentAccessViewController extends BodyViewController {
             this.secretTextfield.value
         );
 
-        return this.account.validateAccess(access).then(hasAccess => {
+        return this.account.validateAccess(access).then(async hasAccess => {
             if (!hasAccess)
                 return Client.popupViewController
                     .pushMessage('#_api_key_invalid', '#_access')
                     .then(() => this.load())
                     .then(() => this.focus());
 
-            this.account.updateAccess(access, true);
+            const keepLogin = await Client.popupViewController.queryBoolean('#_query_text_keep_login', '#_query_title_keep_login');
+
+            this.account.updateAccess(access, keepLogin);
             this.load();
             this.removeFromParent();
         }).catch(error => Client.popupViewController.pushError(error).then(() => this.load()).then(() => this.focus()));

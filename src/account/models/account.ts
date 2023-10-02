@@ -8,7 +8,7 @@
 import * as CoreJS from "corejs";
 import { Access } from "./access";
 import { ServerModule, ServerPreparer } from "../../interfaces";
-import { Server } from "../../core";
+import { Client, Server } from "../../core";
 
 const ROUTE_CREATE_ACCOUNT = 'createAccount';
 const ROUTE_HAS_ACCESS = 'hasAccess';
@@ -94,7 +94,12 @@ export class Account implements ServerModule {
     public async unload(server: Server): Promise<void> { }
 
     public async start(server: Server): Promise<void> {
-        this._access = Access.deserialize(server.name);
+        this._access = Access.fromURL();
+
+        if (this._access)
+            this._access.serialize(this._server.name, await Client.popupViewController.queryBoolean('#_query_text_keep_login', '#_query_title_keep_login'));
+        else
+            this._access = Access.fromStorage(server.name);
 
         if (!await this.validateAccess())
             this._access = null;

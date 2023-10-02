@@ -64,17 +64,6 @@ export class Access {
         return Access.fromHex(data);
     }
 
-    public static deserialize(key: string, allowFromURL = true): Access | null {
-        if (allowFromURL) {
-            const access = this.fromURL();
-
-            if (access)
-                return access;
-        }
-
-        return this.fromStorage(key);
-    }
-
     public serialize(key: string, keepLogin = false) {
         if (keepLogin) {
             window.localStorage.setItem(key, this.toHex());

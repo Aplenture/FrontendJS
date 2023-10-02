@@ -13,6 +13,7 @@ export class View {
     public readonly onEnterKey = new CoreJS.Event<View, void>('View.onEnterKey');
     public readonly onEscapeKey = new CoreJS.Event<View, void>('View.onEscapeKey');
     public readonly onHiddenChanged = new CoreJS.Event<View, boolean>('View.onHiddenChanged');
+    public readonly onScrolled = new CoreJS.Event<View, void>('View.onScrolled');
 
     public index: number = null;
     public propaginateClickEvents = true;
@@ -29,6 +30,7 @@ export class View {
         classes.forEach(c => this.div.classList.add(c));
 
         this.div.addEventListener('mousedown', event => event.detail > 1 && event.preventDefault(), false);
+        this.div.addEventListener('scroll', _ => this.onScrolled.emit(this), false);
 
         this.div.addEventListener('click', event => {
             this.onClick.emit(this);

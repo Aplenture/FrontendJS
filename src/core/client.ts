@@ -105,7 +105,10 @@ export abstract class Client {
         let localization: any;
 
         try {
-            const shortenLanguage = window.navigator.language.substring(0, window.navigator.language.indexOf('-'));
+            const indexOfHyphen = window.navigator.language.indexOf('-');
+            const shortenLanguage = -1 == indexOfHyphen
+                ? window.navigator.language
+                : window.navigator.language.substring(0, indexOfHyphen);
 
             localization = await new JSONRequest<void, NodeJS.ReadOnlyDict<string>>(path + shortenLanguage + '.json').send();
             CoreJS.Localization.language = window.navigator.language;

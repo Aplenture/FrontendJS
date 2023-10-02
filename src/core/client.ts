@@ -105,7 +105,9 @@ export abstract class Client {
         let localization: any;
 
         try {
-            localization = await new JSONRequest<void, NodeJS.ReadOnlyDict<string>>(path + window.navigator.language + '.json').send();
+            const shortenLanguage = window.navigator.language.substring(0, window.navigator.language.indexOf('-'));
+
+            localization = await new JSONRequest<void, NodeJS.ReadOnlyDict<string>>(path + shortenLanguage + '.json').send();
             CoreJS.Localization.language = window.navigator.language;
         } catch (error) {
             localization = await new JSONRequest<void, NodeJS.ReadOnlyDict<string>>(path + 'en.json').send();

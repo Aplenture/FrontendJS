@@ -19,6 +19,7 @@ const DEFAULT_LOCALIZATION_PATH = '/localization';
 
 export abstract class Client {
     public static readonly onResize = new CoreJS.Event<void, void>('Client.onResize');
+    public static readonly onInteraction = new CoreJS.Event<void, void>('Client.onInteraction');
 
     public static readonly viewController = new ViewController('root-view-controller');
     public static readonly popupViewController = new PopupViewController('root-popup-view-controller');
@@ -66,6 +67,11 @@ export abstract class Client {
 
         window.addEventListener('resize', () => this.onResize.emit());
         window.addEventListener('unhandledrejection', alertHandler);
+        window.addEventListener('mousemove', () => this.onInteraction.emit());
+        window.addEventListener('scroll', () => this.onInteraction.emit());
+        window.addEventListener('keydown', () => this.onInteraction.emit());
+        window.addEventListener('click', () => this.onInteraction.emit());
+        window.addEventListener('touchstart', () => this.onInteraction.emit());
 
         config.add(new CoreJS.BoolParameter(PARAMETER_DEBUG, 'enables/disables debug mode', false));
 

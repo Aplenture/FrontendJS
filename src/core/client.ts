@@ -70,8 +70,10 @@ export abstract class Client {
         window.addEventListener('mousemove', () => this.onInteraction.emit());
         window.addEventListener('scroll', () => this.onInteraction.emit());
         window.addEventListener('keydown', () => this.onInteraction.emit());
-        window.addEventListener('click', () => this.onInteraction.emit());
+        // window.addEventListener('click', () => this.onInteraction.emit());
         window.addEventListener('touchstart', () => this.onInteraction.emit());
+
+        CoreJS.Event.onEmit.on((_, _event) => _event.name == 'View.onClick' && this.onInteraction.emit());
 
         config.add(new CoreJS.BoolParameter(PARAMETER_DEBUG, 'enables/disables debug mode', false));
 

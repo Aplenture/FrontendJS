@@ -60,6 +60,11 @@ export class ViewController implements ClientModule {
         this.onUnloaded.emit(this);
     }
 
+    public async reload() {
+        await this.unload();
+        await this.load();
+    }
+
     public async start() {
         await Promise.all(this._children.map(child => child.start()));
     }

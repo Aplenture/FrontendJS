@@ -112,21 +112,6 @@ export class MenuViewController extends ViewController {
             this.selectedViewController.focus();
     }
 
-    public enableViewController(index: number, enabled = true) {
-        if (0 > index)
-            return;
-
-        if (index >= this.children.length)
-            return;
-
-        this.menuView.children[index].isDisabled = !enabled;
-        this.tabBar.children[index].isDisabled = !enabled;
-    }
-
-    public disableViewController(index: number) {
-        this.enableViewController(index, false);
-    }
-
     public appendChild(viewController: ViewController, title = viewController.title || '_missing_title_'): number {
         const index = this._viewControllers.push(viewController) - 1;
 
@@ -170,5 +155,61 @@ export class MenuViewController extends ViewController {
         this.containerViewController.removeAllChildren();
         this.menuView.removeAllChildren();
         this.tabBar.removeAllChildren();
+    }
+
+    public enableViewController(viewController: ViewController, enabled?: boolean) {
+        const index = this.children.indexOf(viewController);
+
+        if (0 > index)
+            return;
+
+        this.enableViewControllerAtIndex(index, enabled);
+    }
+
+    public disableViewController(viewController) {
+        this.enableViewController(viewController, false);
+    }
+
+    public enableViewControllerAtIndex(index: number, enabled = true) {
+        if (0 > index)
+            return;
+
+        if (index >= this.children.length)
+            return;
+
+        this.menuView.children[index].isDisabled = !enabled;
+        this.tabBar.children[index].isDisabled = !enabled;
+    }
+
+    public disableViewControllerAtIndex(index: number) {
+        this.enableViewControllerAtIndex(index, false);
+    }
+
+    public showViewController(viewController: ViewController, visible?: boolean) {
+        const index = this.children.indexOf(viewController);
+
+        if (0 > index)
+            return;
+
+        this.showViewControllerAtIndex(index, visible);
+    }
+
+    public hideViewController(viewController) {
+        this.showViewController(viewController, false);
+    }
+
+    public showViewControllerAtIndex(index: number, visible = true) {
+        if (0 > index)
+            return;
+
+        if (index >= this.children.length)
+            return;
+
+        this.menuView.children[index].isHidden = !visible;
+        this.tabBar.children[index].isHidden = !visible;
+    }
+
+    public hideViewControllerAtIndex(index: number) {
+        this.showViewControllerAtIndex(index, false);
     }
 }

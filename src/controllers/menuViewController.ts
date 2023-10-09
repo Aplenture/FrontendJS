@@ -62,6 +62,17 @@ export class MenuViewController extends ViewController {
     }
 
     public get selectedViewController(): ViewController { return this._viewControllers[this._selectedIndex]; }
+    public set selectedViewController(value: ViewController) {
+        const index = this._viewControllers.indexOf(value);
+
+        if (index == this.selectedIndex)
+            return;
+
+        if (index < 0)
+            throw new Error(`menu does not contain this view controller`);
+
+        this.selectedIndex = index;
+    }
 
     public get selectedIndex(): number { return this._selectedIndex; }
     public set selectedIndex(value: number) {

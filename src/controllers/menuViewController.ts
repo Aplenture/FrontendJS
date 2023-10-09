@@ -119,8 +119,8 @@ export class MenuViewController extends ViewController {
     public appendChild(viewController: ViewController, title = viewController.title || '_missing_title_'): number {
         const index = this._viewControllers.push(viewController) - 1;
 
-        viewController.titleBar = this.titleBar;
-        viewController.footerBar = this.footerBar;
+        // viewController.titleBar = this.titleBar;
+        // viewController.footerBar = this.footerBar;
 
         this.menuView.addItem(title);
         this.tabBar.addItem(title);

@@ -197,15 +197,13 @@ export class PopupViewController extends ViewController {
         return this.pushViewController(viewController).then(() => value);
     }
 
-    public queryNumber(text: string, title: string): Promise<number> {
+    public queryNumber(text: string, title: string, value?: number): Promise<number> {
         const viewController = new BodyViewController('message');
 
         const textLabel = new Label('text');
         const textField = new TextField();
         const okButton = new Button('ok');
         const cancelButton = new Button('cancel');
-
-        let value: number;
 
         viewController.titleBar.title = title;
         viewController.contentView.appendChild(textLabel);
@@ -218,11 +216,12 @@ export class PopupViewController extends ViewController {
 
         okButton.text = '#_ok';
         okButton.tabIndex = 1;
-        okButton.isDisabled = true;
+        okButton.isDisabled = undefined == value;
 
         cancelButton.type = ButtonType.Cancel;
         cancelButton.tabIndex = 2;
 
+        textField.value = value.toString();
         textField.type = TextFieldType.Number;
         textField.isTitleHidden = true;
         textField.onEnterKey.on(() => textField.value && (value = textField.numberValue) && this.popViewController());

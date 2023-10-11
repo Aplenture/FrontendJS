@@ -11,6 +11,7 @@ export enum ButtonType {
     Settings = 'settings',
     Delete = 'delete',
     Cancel = 'cancel',
+    Done = 'done',
     Expose = 'expose',
     Copy = 'copy',
     Add = 'add'

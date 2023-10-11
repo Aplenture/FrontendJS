@@ -11,6 +11,11 @@ import { Button, Label, TextField, TextFieldType } from "../views";
 import { BodyViewController, StackViewController } from ".";
 import { ButtonType } from "../enums";
 
+export enum QueryBooleanType {
+    YesNo,
+    DoneContinue
+}
+
 export class PopupViewController extends ViewController {
     public stackViewController: StackViewController;
     public closeButton: View;
@@ -77,7 +82,7 @@ export class PopupViewController extends ViewController {
         return this.pushViewController(viewController);
     }
 
-    public queryBoolean(text: string, title: string): Promise<boolean> {
+    public queryBoolean(text: string, title: string, type = QueryBooleanType.YesNo): Promise<boolean> {
         const viewController = new BodyViewController('message');
 
         const textLabel = new Label('text');
@@ -93,13 +98,25 @@ export class PopupViewController extends ViewController {
         viewController.view.propaginateKeyEvents = false;
 
         textLabel.text = text;
-
-        yesButton.text = '#_yes';
         yesButton.tabIndex = 1;
-
-        noButton.type = ButtonType.Cancel;
-        noButton.text = '#_no';
         noButton.tabIndex = 2;
+
+        switch (type) {
+            case QueryBooleanType.DoneContinue:
+                yesButton.type = ButtonType.Done;
+                yesButton.text = '#_done';
+
+                noButton.text = '#_continue';
+                break;
+
+            default:
+                yesButton.type = ButtonType.Done;
+                yesButton.text = '#_yes';
+
+                noButton.type = ButtonType.Cancel;
+                noButton.text = '#_no';
+                break;
+        }
 
         yesButton.onEnterKey.on(() => (value = true) && this.popViewController());
         yesButton.onEscapeKey.on(() => (value = false) || this.popViewController());

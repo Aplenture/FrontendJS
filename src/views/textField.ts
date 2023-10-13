@@ -61,6 +61,10 @@ export class TextField extends View {
         });
     }
 
+
+    public get isReadonly(): boolean { return this.input.readOnly; }
+    public set isReadonly(value: boolean) { this.input.readOnly = value; }
+
     public get hasFocus(): boolean { return document.activeElement == this.input; }
 
     public get type(): TextFieldType { return this._type; }

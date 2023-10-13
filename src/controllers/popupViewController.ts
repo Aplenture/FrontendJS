@@ -5,11 +5,19 @@
  * MIT License https://github.com/Aplenture/FrontendJS/blob/main/LICENSE
  */
 
+import * as CoreJS from "corejs";
 import { View } from "../core/view";
 import { ViewController } from "../core/viewController";
 import { Button, Label, TextField, TextFieldType } from "../views";
 import { BodyViewController, StackViewController } from ".";
 import { ButtonType } from "../enums";
+import { mobileAndTabletCheck } from "../utils";
+
+interface QueryNumberOptions {
+    readonly default?: number;
+    readonly min?: number;
+    readonly max?: number;
+}
 
 export enum QueryBooleanType {
     YesNo,
@@ -214,17 +222,26 @@ export class PopupViewController extends ViewController {
         return this.pushViewController(viewController).then(() => value);
     }
 
-    public queryNumber(text: string, title: string, value?: number): Promise<number> {
+    public queryNumber(text: string, title: string, options: QueryNumberOptions = {}): Promise<number> {
         const viewController = new BodyViewController('message');
 
         const textLabel = new Label('text');
         const textField = new TextField();
         const okButton = new Button('ok');
         const cancelButton = new Button('cancel');
+        const increaseButton = new Button('increase');
+        const decreaseButton = new Button('decrease');
+        const inputView = new View('input', 'horizontal-view');
+
+        const isMobile = mobileAndTabletCheck();
+
+        // initialize value as undefined
+        // to return undefined if view is poped from external
+        let value: number;
 
         viewController.titleBar.title = title;
         viewController.contentView.appendChild(textLabel);
-        viewController.contentView.appendChild(textField);
+        viewController.contentView.appendChild(inputView);
         viewController.footerBar.appendChild(cancelButton);
         viewController.footerBar.appendChild(okButton);
         viewController.view.propaginateKeyEvents = false;
@@ -233,17 +250,18 @@ export class PopupViewController extends ViewController {
 
         okButton.text = '#_ok';
         okButton.tabIndex = 1;
-        okButton.isDisabled = undefined == value;
 
         cancelButton.type = ButtonType.Cancel;
         cancelButton.tabIndex = 2;
 
-        textField.value = value.toString();
+        textField.isReadonly = isMobile;
         textField.type = TextFieldType.Number;
+        textField.numberValue = options.default ?? 0;
         textField.isTitleHidden = true;
         textField.onEnterKey.on(() => textField.value && (value = textField.numberValue) && this.popViewController());
         textField.onEscapeKey.on(() => (value = null) || this.popViewController());
-        textField.onChange.on(() => okButton.isDisabled = !textField.value);
+        textField.onChange.on(() => textField.numberValue = CoreJS.Math.clamp(textField.numberValue, options.min, options.max));
+        textField.onChange.on(() => okButton.isDisabled = undefined == textField.value);
 
         okButton.onEnterKey.on(() => textField.value && (value = textField.numberValue) && this.popViewController());
         okButton.onEscapeKey.on(() => (value = null) || this.popViewController());
@@ -252,6 +270,18 @@ export class PopupViewController extends ViewController {
         cancelButton.onEnterKey.on(() => (value = null) || this.popViewController());
         cancelButton.onEscapeKey.on(() => (value = null) || this.popViewController());
         cancelButton.onClick.on(() => (value = null) || this.popViewController());
+
+        increaseButton.type = ButtonType.Add;
+        increaseButton.isVisible = isMobile;
+        increaseButton.onClick.on(() => textField.numberValue = CoreJS.Math.clamp(textField.numberValue + 1, options.min, options.max));
+
+        decreaseButton.type = ButtonType.Remove;
+        decreaseButton.isVisible = isMobile;
+        decreaseButton.onClick.on(() => textField.numberValue = CoreJS.Math.clamp(textField.numberValue - 1, options.min, options.max));
+
+        inputView.appendChild(textField);
+        inputView.appendChild(decreaseButton);
+        inputView.appendChild(increaseButton);
 
         return this.pushViewController(viewController).then(() => value);
     }

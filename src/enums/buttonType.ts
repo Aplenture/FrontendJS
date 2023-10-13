@@ -14,5 +14,6 @@ export enum ButtonType {
     Done = 'done',
     Expose = 'expose',
     Copy = 'copy',
-    Add = 'add'
+    Add = 'add',
+    Remove = 'remove'
 }

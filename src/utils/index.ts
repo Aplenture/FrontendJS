@@ -5,4 +5,5 @@
  * MIT License https://github.com/Aplenture/FrontendJS/blob/main/LICENSE
  */
 
+export * from "./environment";
 export * from "./fs";

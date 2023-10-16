@@ -11,7 +11,6 @@ import { ViewController } from "../core/viewController";
 import { Button, Label, TextField, TextFieldType } from "../views";
 import { BodyViewController, StackViewController } from ".";
 import { ButtonType } from "../enums";
-import { mobileAndTabletCheck } from "../utils";
 
 interface QueryNumberOptions {
     readonly default?: number;
@@ -232,8 +231,9 @@ export class PopupViewController extends ViewController {
         const increaseButton = new Button('increase');
         const decreaseButton = new Button('decrease');
         const inputView = new View('input', 'horizontal-view');
-
-        const isMobile = mobileAndTabletCheck();
+        
+        // don't use client.isMobile because of circulating imports
+        const isMobile = "maxTouchPoints" in navigator && navigator.maxTouchPoints > 0;
 
         // initialize value as undefined
         // to return undefined if view is poped from external

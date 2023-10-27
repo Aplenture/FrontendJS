@@ -256,7 +256,7 @@ export class PopupViewController extends ViewController {
 
         textField.isReadonly = isMobile;
         textField.type = TextFieldType.Number;
-        textField.numberValue = options.default ?? 0;
+        textField.numberValue = CoreJS.Math.clamp(options.default ?? 0, options.min, options.max);
         textField.isTitleHidden = true;
         textField.onEnterKey.on(() => textField.value && (value = textField.numberValue) && this.popViewController());
         textField.onEscapeKey.on(() => (value = null) || this.popViewController());

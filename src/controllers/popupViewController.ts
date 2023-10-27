@@ -231,7 +231,7 @@ export class PopupViewController extends ViewController {
         const increaseButton = new Button('increase');
         const decreaseButton = new Button('decrease');
         const inputView = new View('input', 'horizontal-view');
-        
+
         // don't use client.isMobile because of circulating imports
         const isMobile = "maxTouchPoints" in navigator && navigator.maxTouchPoints > 0;
 
@@ -286,7 +286,7 @@ export class PopupViewController extends ViewController {
         return this.pushViewController(viewController).then(() => value);
     }
 
-    public queryCurrency(text: string, title: string): Promise<number> {
+    public queryCurrency(text: string, title: string, options: QueryNumberOptions = {}): Promise<number> {
         const viewController = new BodyViewController('message');
 
         const textLabel = new Label('text');
@@ -305,19 +305,18 @@ export class PopupViewController extends ViewController {
 
         textLabel.text = text;
 
-        textField.selectRange(0, 0);
-
         okButton.text = '#_ok';
         okButton.tabIndex = 1;
-        okButton.isDisabled = true;
 
         cancelButton.type = ButtonType.Cancel;
         cancelButton.tabIndex = 2;
 
         textField.type = TextFieldType.Currency;
+        textField.numberValue = CoreJS.Math.clamp(options.default ?? 0, options.min, options.max);
         textField.isTitleHidden = true;
         textField.onEnterKey.on(() => textField.value && (value = textField.numberValue) && this.popViewController());
         textField.onEscapeKey.on(() => (value = null) || this.popViewController());
+        textField.onChange.on(() => textField.numberValue = CoreJS.Math.clamp(textField.numberValue, options.min, options.max));
         textField.onChange.on(() => okButton.isDisabled = !textField.value);
 
         okButton.onEnterKey.on(() => textField.value && (value = textField.numberValue) && this.popViewController());

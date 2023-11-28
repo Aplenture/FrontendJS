@@ -20,8 +20,8 @@ export function download(file: CoreJS.File) {
     const element = document.createElement('a');
 
     element.id = 'download';
-    element.setAttribute('href', `data:${file.type};charset=${file.charset},` + file.toString());
-    element.setAttribute('download', file.name);
+    element.setAttribute('href', `data:${file.type};charset=${file.charset},${file.bom}${file.toString()}`);
+    element.setAttribute('download', `${file.name}.${file.extension}`);
 
     element.style.display = 'none';
 

@@ -20,6 +20,10 @@ interface Config {
 }
 
 export class Server implements ClientModule {
+    public readonly onRequestingStart = new CoreJS.Event<Server, Request<any>>("Server.onRequestingStart");
+    public readonly onRequestingEnd = new CoreJS.Event<Server, Request<any>>("Server.onRequestingEnd");
+    public readonly onRequestingDone = new CoreJS.Event<Server, void>("Server.onRequestingDone");
+
     private readonly _requests: NodeJS.Dict<Request<any>> = {};
     private readonly _modules: readonly ServerModule[];
 
@@ -32,6 +36,7 @@ export class Server implements ClientModule {
 
     public get endpoint(): string { return this._config.endpoint; }
     public get infos(): NodeJS.ReadOnlyDict<any> { return this._infos; }
+    public get runningRequests(): number { return Object.values(this._requests).filter(request => request.isRunning).length; }
 
     public async prepare(preparer: ClientPreparer): Promise<void> {
         const routesParameters = [];
@@ -88,9 +93,18 @@ export class Server implements ClientModule {
     public request<TResponse>(route: string, parser: (data: string) => TResponse, args: NodeJS.ReadOnlyDict<any> = {}): Promise<TResponse> {
         const request = this.getRequest(route, args);
 
-        return request.isRunning
-            ? request.promise.then(parser)
-            : request.send(args).then(parser);
+        if (request.isRunning)
+            return request.promise.then(parser);
+
+        request.onRequesting.once((_, request) => this.onRequestingStart.emit(this, request));
+
+        request.onFinished.once((_, request) => this.onRequestingEnd.emit(this, request));
+        request.onFinished.once(() => 0 == this.runningRequests && this.onRequestingDone.emit(this));
+
+        request.onCanceled.once((_, request) => this.onRequestingEnd.emit(this, request));
+        request.onCanceled.once(() => 0 == this.runningRequests && this.onRequestingDone.emit(this));
+
+        return request.send(args).then(parser);
     }
 
     public requestBool(route: string, args?: NodeJS.ReadOnlyDict<any>): Promise<boolean> {
@@ -115,11 +129,8 @@ export class Server implements ClientModule {
 
     private getRequest(route: string, args: NodeJS.ReadOnlyDict<any>) {
         const key = `${route} ${CoreJS.parseArgsToString(args)}`;
-        const request = this._requests[key];
 
-        if (!request)
-            return this._requests[key] = new Request(this.endpoint, { route: this._config.routes[route] });
-
-        return request;
+        return this._requests[key]
+            || (this._requests[key] = new Request(this.endpoint, { route: this._config.routes[route] }));
     }
 }

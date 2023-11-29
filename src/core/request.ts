@@ -17,6 +17,8 @@ export interface RequestOptions {
 export class Request<TArgs> {
     public readonly onRequesting = new CoreJS.Event<Request<TArgs>, any>('Request.onRequesting');
     public readonly onResponse = new CoreJS.Event<Request<TArgs>, any>('Request.onResponse');
+    public readonly onFinished = new CoreJS.Event<Request<TArgs>, void>('Request.onFinished');
+    public readonly onCanceled = new CoreJS.Event<Request<TArgs>, void>('Request.onCanceled');
 
     public route: string;
     public type: CoreJS.RequestMethod;
@@ -106,6 +108,8 @@ export class Request<TArgs> {
 
         this.request.onreadystatechange = null;
         this.request.abort();
+
+        this.onCanceled.emit(this);
     }
 
     public setHeader(name: string, value: string) {
@@ -143,5 +147,7 @@ export class Request<TArgs> {
     private finish() {
         this._running = false;
         this._promise = null;
+
+        this.onFinished.emit(this);
     }
 }

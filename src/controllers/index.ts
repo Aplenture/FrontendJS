@@ -8,6 +8,7 @@
 export * from "./bodyViewController";
 export * from "./containerViewController";
 export * from "./gridViewController";
+export * from "./loadingViewController";
 export * from "./menuViewController";
 export * from "./notificationViewController";
 export * from "./popupViewController";

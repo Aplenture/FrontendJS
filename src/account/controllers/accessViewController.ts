@@ -70,7 +70,7 @@ export class AccessViewController extends BodyViewController {
         this.secretLabel.copyButton.isVisible = true;
         this.secretLabel.isExposed = false;
 
-        this.expirationLabel.text = CoreJS.formatDateTime(new Date(this.access.expiration));
+        this.expirationLabel.text = CoreJS.formatTime("YYYY-MM-DD hh:mm", new Date(this.access.expiration));
         this.expirationLabel.isHidden = !this.access.expiration;
 
         this.titleBar.title = this.access.api == this.account.access.api

@@ -124,7 +124,7 @@ export class TextField extends View {
     }
 
     public get dateValue(): Date { return CoreJS.calcDate({ date: new Date(this.value) }); }
-    public set dateValue(value: Date) { this.value = CoreJS.formatDate(value); }
+    public set dateValue(value: Date) { this.value = CoreJS.formatDate("YYYY-MM-DD", value); }
 
     public get numberValue(): number { return Number(this.value); }
     public set numberValue(value: number) { this.value = value.toString(); }

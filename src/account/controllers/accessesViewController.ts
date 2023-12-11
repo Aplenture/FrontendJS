@@ -85,7 +85,7 @@ export class AccessesViewController extends BodyViewController implements TableV
             : '#_api';
 
         cell.expirationLabel.text = access.expiration
-            ? CoreJS.formatDateTime(new Date(access.expiration))
+            ? CoreJS.formatTime("YYYY-MM-DD hh:mm", new Date(access.expiration))
             : '';
     }
 

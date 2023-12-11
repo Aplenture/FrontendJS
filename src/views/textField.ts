@@ -12,7 +12,6 @@ export enum TextFieldType {
     Text = 'text',
     Password = 'password',
     Date = 'date',
-    DateTimeLocal = 'datetime-local',
     Number = 'number',
     Currency = 'currency',
     Color = 'color'
@@ -124,12 +123,8 @@ export class TextField extends View {
         }
     }
 
-    public get dateValue(): Date { return new Date(this.value); }
-    public set dateValue(value: Date) {
-        this.value = this.type == TextFieldType.Date
-            ? new Date(value.getTime() - value.getTimezoneOffset() * CoreJS.Milliseconds.Minute).toLocaleDateString('en-ca')
-            : new Date(value.getTime() - value.getTimezoneOffset() * CoreJS.Milliseconds.Minute).toISOString().slice(0, 16);
-    }
+    public get dateValue(): Date { return CoreJS.calcDate({ date: new Date(this.value) }); }
+    public set dateValue(value: Date) { this.value = CoreJS.formatDate(value); }
 
     public get numberValue(): number { return Number(this.value); }
     public set numberValue(value: number) { this.value = value.toString(); }

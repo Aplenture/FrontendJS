@@ -126,8 +126,27 @@ export class TextField extends View {
     public get dateValue(): Date { return CoreJS.calcDate({ date: new Date(this.value) }); }
     public set dateValue(value: Date) { this.value = CoreJS.formatDate("YYYY-MM-DD", value); }
 
-    public get numberValue(): number { return Number(this.value); }
-    public set numberValue(value: number) { this.value = value.toString(); }
+    public get numberValue(): number {
+        switch (this.type) {
+            case TextFieldType.Date:
+                return Number(this.dateValue);
+
+            default:
+                return Number(this.value);
+        }
+    }
+
+    public set numberValue(value: number) {
+        switch (this.type) {
+            case TextFieldType.Date:
+                this.dateValue = new Date(value);
+                break;
+
+            default:
+                this.value = value.toString();
+                break;
+        }
+    }
 
     public get placeholder(): string { return this.input.placeholder; }
     public set placeholder(value: string) { this.input.placeholder = CoreJS.Localization.translate(value); }

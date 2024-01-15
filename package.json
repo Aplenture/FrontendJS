@@ -35,6 +35,6 @@
         "typescript": "^5.0.4"
     },
     "dependencies": {
-        "corejs": "github:Aplenture/CoreJS"
+        "corejs": "github:Aplenture/CoreJS_old_2"
     }
 }

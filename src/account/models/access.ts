@@ -42,8 +42,10 @@ export class Access {
         const api = Router.route.get(KEY_API);
         const secret = Router.route.get(KEY_SECRET);
 
-        Router.route.delete(KEY_API);
-        Router.route.delete(KEY_SECRET);
+        // do not delete access data from url
+        // to workaround the logout bug on android chorme
+        // Router.route.delete(KEY_API);
+        // Router.route.delete(KEY_SECRET);
 
         if (!api)
             return null;
